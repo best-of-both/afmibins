@@ -26,26 +26,26 @@
 
 namespace dt {
 
-    class point {
-        public:
-            typedef double value_type;
-            typedef value_type& reference;
-            typedef const value_type& const_reference;
-            typedef std::size_t size_type;
+	class point {
+		public:
+			typedef double value_type;
+			typedef value_type& reference;
+			typedef const value_type& const_reference;
+			typedef std::size_t size_type;
 
-        private:
-            value_type values[3];
-            size_type index;
-        public:
-            point(value_type x, value_type y, value_type z, const size_type index)
-                : values{x, y, z}, index(index) {}
-            point() : values{0.0, 0.0, 0.0}, index(0) {}
+		private:
+			value_type values[3];
+			size_type index;
+		public:
+			point(value_type x, value_type y, value_type z, const size_type index)
+				: values{x, y, z}, index(index) {}
+			point() : values{0.0, 0.0, 0.0}, index(0) {}
 
-            reference operator[](size_type index) { return values[index]; }
-            const_reference operator[](size_type index) const { return values[index]; }
-            size_type get_index() const { return index; }
+			reference operator[](size_type index) { return values[index]; }
+			const_reference operator[](size_type index) const { return values[index]; }
+			size_type get_index() const { return index; }
 
-    };
+	};
 
 	std::ostream&
 	operator<<(std::ostream& out, point p)
