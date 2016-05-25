@@ -1,0 +1,147 @@
+#########################################################################
+#                                                                       #
+# Immersed Boundary Incompressible Navier-Stokes solver                 #
+#                                                                       #
+# Copyright (C) 2016  Andrew Kassen <atkassen@gmail.com>                #
+#                                                                       #
+# This program is free software: you can redistribute it and/or modify  #
+# it under the terms of the GNU General Public License as published by  #
+# the Free Software Foundation, either version 3 of the License, or     #
+# (at your option) any later version.                                   #
+#                                                                       #
+# This program is distributed in the hope that it will be useful,       #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+# GNU General Public License for more details.                          #
+#                                                                       #
+# You should have received a copy of the GNU General Public License     #
+# along with this program.  If not, see <http://www.gnu.org/licenses/>. #
+#                                                                       #
+#########################################################################
+
+CXX ?= g++
+INCLUDES = -I/opt/local/include
+LIBS = 
+
+rootdir = $(shell git rev-parse --show-cdup)
+currdir = $(shell pwd)
+root = $(realpath $(currdir)/$(rootdir))
+reldir = $(strip $(subst $(root)/,,$(currdir)))
+ifeq "$(reldir)" "$(currdir)"
+reldir =
+endif
+makefile = Makefile
+
+SRCDIR ?= src
+INCDIR ?= include
+TESTDIR ?= test
+mangled = $(subst $(SRCDIR)/,,$(reldir))
+incdir = $(patsubst ./%,%,$(rootdir).$(INCDIR))
+depdir = $(rootdir)deps
+
+LIBDIR = $(rootdir)lib
+OBJDIR = $(patsubst %/,%,$(rootdir)obj/$(mangled))
+BINDIR = $(patsubst %/,%,$(rootdir)bin/$(mangled))
+DEPDIR = $(patsubst %/,%,$(depdir)/$(mangled))
+
+needlibs = $(foreach a,$(need_modules),-l$(subst /,.,$a))
+archives = $(foreach a,$(need_modules),$(LIBDIR)/lib$(subst /,.,$a).a)
+needhdrs = $(shell grep '\#\s*include\s*\".*/' $(SRCDIR)/*.cc $(INCDIR)/*.h 2> /dev/null | cut -d \" -f 2 | sort | uniq)
+sharedhdrs = $(foreach h,$(needhdrs),$(incdir)/$h)
+
+INCLUDES += -I$(INCDIR) -I/opt/local/include/atlas -I$(incdir)
+LIBDIRS += -L/opt/local/lib -L$(LIBDIR)
+LIBS += -lptcblas -latlas -lptlapack -lpthread
+
+srcs = $(shell ls -F $(SRCDIR)/*.cc 2> /dev/null)
+hdrs = $(shell ls -F $(INCDIR)/*.h 2> /dev/null)
+objects = $(patsubst $(SRCDIR)/%.cc,$(OBJDIR)/%.o,$(srcs))
+dependencies = $(patsubst $(SRCDIR)/%.cc,$(DEPDIR)/%.d,$(srcs))
+testsrcs = $(shell ls -F $(TESTDIR)/*.cc 2> /dev/null)
+tests = $(patsubst $(TESTDIR)/%.cc,$(BINDIR)/.test_%.passed,$(testsrcs))
+testdeps = $(patsubst $(TESTDIR)/%.cc,$(DEPDIR)/test_%.d,$(testsrcs))
+submodules = $(shell ls $(SRCDIR)/$(makefile) 2> /dev/null)
+links = $(patsubst $(INCDIR)/%,$(incdir)/$(mangled)/%,$(hdrs))
+
+libname = $(subst /,.,$(mangled))
+target = $(LIBDIR)/lib$(libname).a
+
+green = "\033[32;1m"
+red = "\033[31;1m"
+yellow = "\033[33;1m"
+normal = "\033[0;0m"
+ifneq "$(mangled)" ""
+depth = [$(yellow)$(mangled)$(normal)]
+else
+depth = [$(yellow)root$(normal)]
+endif
+
+.PHONY: all test clean distclean links FORCE
+
+.PRECIOUS: $(patsubst $(TESTDIR)/%.cc,$(BINDIR)/test_%,$(testsrcs)) $(links) $(sharedhdrs)
+
+all: $(target) $(submodules)
+
+test: $(target) $(tests) $(submodules)
+
+clean: $(submodules)
+
+distclean: $(submodules)
+
+links: | $(sharedhdrs)
+
+$(sharedhdrs): | $(links)
+	@$(MAKE) --directory=$(rootdir)$(SRCDIR)/$(subst /,/$(SRCDIR)/,$(subst $(incdir)/,,$(patsubst %/,%,$(dir $@)))) links
+
+FORCE:
+
+$(archives):
+	@$(MAKE) -s --directory=$(rootdir)/$(SRCDIR)/$(subst .,/,$(patsubst $(LIBDIR)/lib%.a,%,$@))
+
+%/$(makefile): FORCE
+	@echo $(depth) $(green)make$(normal) $(subst $(rootdir)/,,$(subst $(SRCDIR)/,,$*)) $(MAKECMDGOALS)
+	@$(MAKE) -s --directory=$* $(MAKECMDGOALS)
+
+$(links): | $(incdir)/$(mangled)
+	-@ln $(INCDIR)/$(notdir $@) $@ 2> /dev/null
+
+$(incdir)/$(mangled):
+	@mkdir -p $(incdir)/$(mangled) 2> /dev/null #&& echo $(depth) $(green)mkdir$(normal) .$(INCDIR)/$(mangled)
+
+$(OBJDIR):
+	@echo $(depth) $(green)mkdir$(normal) obj
+	@mkdir -p $(OBJDIR)
+
+$(LIBDIR):
+	@echo $(depth) $(green)mkdir$(normal) lib
+	@mkdir -p $(LIBDIR)
+
+$(BINDIR):
+	@echo $(depth) $(green)mkdir$(normal) bin
+	@mkdir -p $(BINDIR)
+
+$(DEPDIR):
+	@echo $(depth) $(green)mkdir$(normal) deps
+	@mkdir -p $(DEPDIR)
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cc | $(sharedhdrs) $(OBJDIR) $(DEPDIR)
+	@echo $(depth) $(green)$(CXX)$(normal) $(notdir $<)
+	@$(CXX) -g -std=c++11 -MM -MT $@ -MF $(DEPDIR)/$*.d $(INCLUDES) $(LIBDIRS) $(LIBS) $<  # create dependencies
+	@$(CXX) -g -std=c++11 -Wall -pedantic $(INCLUDES) $(LIBDIRS) $(LIBS) -c -o $@ $<
+
+$(target): $(objects) | $(LIBDIR)
+ifneq "$(objects)" ""
+	@echo $(depth) $(green)ar cr$(normal) $(subst $(LIBDIR)/,,$(target))
+	@ar cr $(target) $(objects)
+endif
+
+$(BINDIR)/.test_%.passed: $(BINDIR)/test_%
+	-@($< && echo $(depth) $(green)test$(normal) $* [$(green)passed$(normal)] && touch $@) || \
+		     echo $(depth) $(green)test$(normal) $* [$(red)failed$(normal)]
+
+$(BINDIR)/test_%: $(TESTDIR)/%.cc $(target) $(archives) | $(BINDIR) $(DEPDIR)
+	@$(CXX) -g -std=c++11 -MM -MT $@ -MF $(DEPDIR)/test_$*.d $(INCLUDES) $(LIBDIRS) $(LIBS) -L$(LIBDIR) -l$(libname) $<
+	@$(CXX) -g -std=c++11 -Wall -pedantic $(INCLUDES) $(LIBDIRS) $(LIBS) $(needlibs) -L$(LIBDIR) -l$(libname) -o $@ $<
+
+-include $(dependencies)
+-include $(testdeps)

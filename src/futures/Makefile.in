@@ -1,0 +1,104 @@
+CXX ?= g++
+INCLUDES = -I/opt/local/include
+LIBS = 
+
+depth = [$(MAKELEVEL)]
+currdir = $(shell pwd)
+reldir = $(strip $(subst $(realpath $(currdir)/$(rootdir))/,,$(currdir)))
+mangled = $(subst src/,,$(reldir))
+needdirs = $(patsubst %,$(rootdir)/%,$(need_modules))
+makefile = Makefile
+
+LIBDIR = $(rootdir)/lib
+OBJDIR = $(patsubst %/,%,$(rootdir)/obj/$(mangled))
+SRCDIR ?= src
+INCDIR ?= include
+TESTDIR ?= test
+BINDIR = $(patsubst %/,%,$(rootdir)/bin/$(mangled))
+DEPDIR = $(patsubst %/,%,$(rootdir)/deps/$(mangled))
+needdirs = $(subst .,/,$(need_modules))
+incdir = $(rootdir)/.$(INCDIR)
+
+INCLUDES += -I. -I$(INCDIR) -I/opt/local/include/atlas -I$(incdir)
+LIBDIRS += -L/opt/local/lib -L$(LIBDIR)
+LIBS += -lptcblas -latlas -lptlapack -lpthread $(foreach l,$(need_modules),-l$l)
+
+srcs = $(shell ls -F $(SRCDIR)/*.cc 2> /dev/null)
+objects = $(patsubst $(SRCDIR)/%.cc,$(OBJDIR)/%.o,$(srcs))
+dependencies = $(patsubst $(SRCDIR)/%.cc,$(DEPDIR)/%.d,$(srcs))
+testsrc = $(shell ls -F $(TESTDIR)/*.cc 2> /dev/null)
+tests = $(patsubst $(TESTDIR)/%.cc,$(BINDIR)/.test_%.result,$(testsrc))
+submodules = $(shell ls */$(makefile) 2> /dev/null)
+archives = $(need_modules:%=$(LIBDIR)/lib%.a)
+
+ifneq "$(srcs)" ""
+target = $(LIBDIR)/lib$(subst /,.,$(mangled)).a
+else
+target = $(incdir)/$(reldir)
+endif
+
+green = "\033[32;1m"
+red = "\033[31;1m"
+normal = "\033[0;0m"
+
+.PHONY: all test clean distclean FORCE
+
+all: $(target) $(submodules)
+
+test: $(target) $(tests) $(submodules)
+
+clean: $(submodules)
+	@echo $(depth) $(green)rm$(normal) obj lib
+	-@rm -r $(objects) $(target) 2> /dev/null
+
+distclean: $(submodules)
+	@echo $(depth) $(green)rm$(normal) obj lib bin deps
+	-@rm -r $(OBJDIR) $(target) $(BINDIR) $(DEPDIR) 2> /dev/null
+
+%/$(makefile): $(incdir)/$* FORCE 
+	-@$(MAKE) -s --directory=$(dir $@) rootdir=$(rootdir)/.. $(MAKEFLAGS) $(MAKECMDGOALS) && \
+		echo $(green)make$(normal) $(dir $@) $(MAKECMDGOALS)
+
+FORCE:
+
+.PRECIOUS: $(patsubst $(TESTDIR)/%.cc,$(BINDIR)/test_%,$(testsrc))
+
+$(archives): $(foreach m,$(needdirs),$(rootdir)/$m/Makefile))
+
+$(incdir)/%: FORCE
+	-@mkdir -p $(incdir)/$* 2> /dev/null && echo $(depth) $(green)mkdir$(normal) $(incdir)/$*
+	-@ln $(INCDIR)/* $(incdir)/$* 2> /dev/null && echo $(depth) $(green)ln$(normal) $(INCDIR) $(incdir)/$*
+
+$(OBJDIR):
+	@echo $(depth) $(green)mkdir$(normal) obj
+	@mkdir -p $(OBJDIR)
+
+$(LIBDIR):
+	@echo $(depth) $(green)mkdir$(normal) lib
+	@mkdir -p $(LIBDIR)
+
+$(BINDIR):
+	@echo $(depth) $(green)mkdir$(normal) bin
+	@mkdir -p $(BINDIR)
+
+$(DEPDIR):
+	@echo $(depth) $(green)mkdir$(normal) deps
+	@mkdir -p $(DEPDIR)
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cc | $(OBJDIR) $(DEPDIR)
+	@echo $(depth) $(green)$(CXX)$(normal) $(notdir $<)
+	@$(CXX) -g -std=c++11 -MM -MT $@ -MF $(DEPDIR)/$*.d $(INCLUDES) $(LIBDIRS) $(LIBS) -c -o $@ $<  # create dependencies
+	@$(CXX) -g -std=c++11 $(INCLUDES) $(LIBDIRS) $(LIBS) -c -o $@ $<
+
+$(target): $(incdir)/$(subst /,.,$(reldir)) $(objects) | $(LIBDIR)
+	@echo $(depth) $(green)ar cr$(normal) $(target)
+	@ar cr $(target) $(objects)
+
+$(BINDIR)/.test_%.result: $(BINDIR)/test_% | $(BINDIR)
+	-@($< && echo $(depth) $(green)test$(normal) $(subst test_,,$(notdir $(basename $<))) [$(green)passed$(normal)] && touch $(BINDIR)/.$*.result) || \
+		     echo $(depth) $(green)test$(normal) $(notdir $(basename $<)) [$(red)failed$(normal)]
+
+$(BINDIR)/test_%: $(TESTDIR)/%.cc | $(BINDIR)
+	@$(CXX) -g -std=c++11 $(INCLUDES) $(LIBDIRS) $(LIBS) -L$(LIBDIR) -l$(patsubst lib%.a,%,$(target)) -o $@ $<
+
+-include $(dependencies)

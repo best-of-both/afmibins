@@ -1,0 +1,13 @@
+.include/*
+deps/*
+obj/*
+lib/*
+bin/*
+
+src/deps/*
+src/obj/*
+src/lib/*
+src/bin/*
+
+*.dSYM
+
