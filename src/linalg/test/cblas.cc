@@ -36,8 +36,7 @@ main(void)
 	dense_matrix A(N, N);
 	vector x(N, 1);
 	vector y(N);
-	x / (double) N;
-	y -= A * (x / (double) N);
+	y -= A * (x / N);
 
 	for (unsigned int i = 0; i < N; ++i)
 		assert(y[i] == 0);

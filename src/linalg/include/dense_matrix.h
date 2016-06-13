@@ -26,6 +26,8 @@
 // * dense_matrix x dense_matrix -> dense_matrix
 // * vector x dense_matrix -> vector
 
+#include <type_traits>
+
 #include "types/typedefs.h"
 #include "futures/futures.h"
 #include "interface.h"
@@ -81,25 +83,25 @@ namespace futures {
 			static size_type cols(dense_matrix, vector x) { return x.cols(); }
 			static size_type rows(dense_matrix a, vector) { return a.rows(); }
 
-		template<typename, typename> friend class mult_op;
+		template<typename, typename, typename> friend class mult_op;
 		friend future<dense_matrix, vector, mult_op> operator*<>(dense_matrix, vector);
 		friend class future<dense_matrix, vector, mult_op>;
 	};
 
-	template<>
-	class mult_op<double, dense_matrix> {
+	template<typename Left>
+	class mult_op<Left, dense_matrix, typename std::enable_if<std::is_arithmetic<Left>::value>::type> {
 		public:
 			typedef dense_matrix result_type;
-			static void apply(result_type&, double, dense_matrix);
+			static void apply(result_type&, Left, dense_matrix);
 			static const char repr = '*';
 		private:
-			static future<double, dense_matrix, mult_op> wrap(double, dense_matrix);
-			static size_type cols(double, dense_matrix x) { return x.cols(); }
-			static size_type rows(double, dense_matrix x) { return x.rows(); }
+			static future<double, dense_matrix, mult_op> wrap(Left, dense_matrix);
+			static size_type cols(Left, dense_matrix x) { return x.cols(); }
+			static size_type rows(Left, dense_matrix x) { return x.rows(); }
 
-		template<typename, typename> friend class mult_op;
-		friend future<double, dense_matrix, mult_op> operator*<double, dense_matrix>(double, dense_matrix);
-		friend class future<double, dense_matrix, mult_op>;
+		template<typename, typename, typename> friend class mult_op;
+		friend future<Left, dense_matrix, mult_op> operator*<Left, dense_matrix>(Left, dense_matrix);
+		friend class future<Left, dense_matrix, mult_op>;
 	};
 
 	template<>
@@ -113,7 +115,7 @@ namespace futures {
 			static size_type cols(dense_matrix, dense_matrix right) { return right.cols(); }
 			static size_type rows(dense_matrix, dense_matrix right) { return right.rows(); }
 
-		template<typename, typename> friend class add_op;
+		template<typename, typename, typename> friend class add_op;
 		friend future<dense_matrix, dense_matrix, add_op> operator+<>(dense_matrix, dense_matrix);
 		friend class future<dense_matrix, dense_matrix, add_op>;
 	};
@@ -129,10 +131,25 @@ namespace futures {
 			static size_type cols(dense_matrix, dense_matrix right) { return right.cols(); }
 			static size_type rows(dense_matrix, dense_matrix right) { return right.rows(); }
 
-		template<typename, typename> friend class sub_op;
+		template<typename, typename, typename> friend class sub_op;
 		friend future<dense_matrix, dense_matrix, sub_op> operator-<>(dense_matrix, dense_matrix);
 		friend class future<dense_matrix, dense_matrix, sub_op>;
 	};
+
+	template<typename Left>
+	future<double, dense_matrix, mult_op>
+	mult_op<Left, dense_matrix, typename std::enable_if<std::is_arithmetic<Left>::value>::type>::wrap(Left alpha, dense_matrix x)
+	{
+		return future<double, dense_matrix, mult_op>(alpha, x);
+	}
+
+	template<typename Left>
+	void
+	mult_op<Left, dense_matrix, typename std::enable_if<std::is_arithmetic<Left>::value>::type>::apply(result_type& y, Left alpha, dense_matrix x)
+	{
+		for (std::size_t i = 0; i < x.rows() * x.cols(); ++i)
+			y.m_values[i] = alpha * x.m_values[i];
+	}
 
 }
 

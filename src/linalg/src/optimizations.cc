@@ -19,6 +19,8 @@
  *                                                                       *
 \*************************************************************************/
 
+#include <iostream>
+
 #include "futures/futures.h"
 #include "optimizations.h"
 #include "interface.h"

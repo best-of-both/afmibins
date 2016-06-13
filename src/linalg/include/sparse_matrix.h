@@ -20,7 +20,9 @@
 \*************************************************************************/
 
 #ifndef LINALG_SPARSE_MATRIX_H
-#define LINALG_SPARSE_MATRIX_H
+#define LINALG_SPARSE_MATRIX
+
+#include <type_traits>
 
 #include "types/typedefs.h"
 #include "futures/futures.h"
@@ -75,25 +77,25 @@ namespace futures {
 			static size_type cols(sparse_matrix, vector x) { return x.cols(); }
 			static size_type rows(sparse_matrix a, vector) { return a.rows(); }
 
-		template<typename, typename> friend class mult_op;
+		template<typename, typename, typename> friend class mult_op;
 		friend future<sparse_matrix, vector, mult_op> operator*<>(sparse_matrix, vector);
 		friend class future<sparse_matrix, vector, mult_op>;
 	};
 
-	template<>
-	class mult_op<double, sparse_matrix> {
+	template<typename Left>
+	class mult_op<Left, sparse_matrix, typename std::enable_if<std::is_arithmetic<Left>::value>::type> {
 		public:
 			typedef sparse_matrix result_type;
-			static void apply(result_type&, double, sparse_matrix);
+			static void apply(result_type&, Left, sparse_matrix);
 			static const char repr = '*';
 		private:
-			static future<double, sparse_matrix, mult_op> wrap(double, sparse_matrix);
-			static size_type cols(double, sparse_matrix x) { return x.cols(); }
-			static size_type rows(double, sparse_matrix x) { return x.rows(); }
+			static future<double, sparse_matrix, mult_op> wrap(Left, sparse_matrix);
+			static size_type cols(Left, sparse_matrix x) { return x.cols(); }
+			static size_type rows(Left, sparse_matrix x) { return x.rows(); }
 
-		template<typename, typename> friend class mult_op;
-		friend future<double, sparse_matrix, mult_op> operator*<double, sparse_matrix>(double, sparse_matrix);
-		friend class future<double, sparse_matrix, mult_op>;
+		template<typename, typename, typename> friend class mult_op;
+		friend future<Left, sparse_matrix, mult_op> operator*<Left, sparse_matrix>(Left, sparse_matrix);
+		friend class future<Left, sparse_matrix, mult_op>;
 	};
 
 	template<>
@@ -107,7 +109,7 @@ namespace futures {
 			static size_type cols(sparse_matrix, sparse_matrix right) { return right.cols(); }
 			static size_type rows(sparse_matrix, sparse_matrix right) { return right.rows(); }
 
-		template<typename, typename> friend class add_op;
+		template<typename, typename, typename> friend class add_op;
 		friend future<sparse_matrix, sparse_matrix, add_op> operator+<>(sparse_matrix, sparse_matrix);
 		friend class future<sparse_matrix, sparse_matrix, add_op>;
 	};
@@ -123,11 +125,25 @@ namespace futures {
 			static size_type cols(sparse_matrix, sparse_matrix right) { return right.cols(); }
 			static size_type rows(sparse_matrix, sparse_matrix right) { return right.rows(); }
 
-		template<typename, typename> friend class sub_op;
+		template<typename, typename, typename> friend class sub_op;
 		friend future<sparse_matrix, sparse_matrix, sub_op> operator-<>(sparse_matrix, sparse_matrix);
 		friend class future<sparse_matrix, sparse_matrix, sub_op>;
 	};
 
+	template<typename Left>
+	future<double, sparse_matrix, mult_op>
+	mult_op<Left, sparse_matrix, typename std::enable_if<std::is_arithmetic<Left>::value>::type>::wrap(Left alpha, sparse_matrix x)
+	{
+		return future<double, sparse_matrix, mult_op>(alpha, x);
+	}
+
+	template<typename Left>
+	void
+	mult_op<Left, sparse_matrix, typename std::enable_if<std::is_arithmetic<Left>::value>::type>::apply(result_type& y, Left alpha, sparse_matrix x)
+	{
+		for (std::size_t i = 0; i < x.rows() * x.cols(); ++i)
+			y.m_values[i] = alpha * x.m_values[i];
+	}
 }
 
 #endif

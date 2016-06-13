@@ -25,6 +25,7 @@
 #include <ostream>
 #include <cstddef>
 #include <initializer_list>
+#include <type_traits>
 
 #include "types/typedefs.h"
 #include "futures/futures.h"
@@ -89,21 +90,21 @@ namespace futures {
 	using linalg::vector;
 	using types::size_type;
 
-	template<>
-	class mult_op<double, vector> {
+	template<typename Left>
+	class mult_op<Left, vector, typename std::enable_if<std::is_arithmetic<Left>::value>::type> {
 		public:
 			typedef vector result_type;
-			static void apply(result_type&, double, vector);
+			static void apply(result_type&, Left, vector);
 			static const char repr = '*';
 		private:
-			static future<double, vector, mult_op> wrap(double, vector);
-			static size_type cols(double, vector x) { return x.cols(); }
-			static size_type rows(double, vector x) { return x.rows(); }
+			static future<double, vector, mult_op> wrap(Left, vector);
+			static size_type cols(Left, vector x) { return x.cols(); }
+			static size_type rows(Left, vector x) { return x.rows(); }
 
-		template<typename, typename> friend class mult_op;
-		friend future<double, vector, mult_op> operator*<double, vector>(double, vector);
-		friend future<double, vector, mult_op> operator-<vector>(vector);
-		friend class future<double, vector, mult_op>;
+		template<typename, typename, typename> friend class mult_op;
+		friend future<Left, vector, mult_op> operator*<Left, vector>(Left, vector);
+		friend future<Left, vector, mult_op> operator-<vector>(vector);
+		friend class future<Left, vector, mult_op>;
 	};
 
 	template<>
@@ -117,7 +118,7 @@ namespace futures {
 			static size_type cols(vector, vector) { return 1; }
 			static size_type rows(vector, vector) { return 1; }
 
-		template<typename, typename> friend class mult_op;
+		template<typename, typename, typename> friend class mult_op;
 		friend future<vector, vector, mult_op> operator*<vector, vector>(vector, vector);
 		friend class future<vector, vector, mult_op>;
 	};
@@ -127,7 +128,7 @@ namespace futures {
 		private:
 			maker() {}
 			static double make(Arg&) { return 0.0; }
-		template<typename, typename, template<typename, typename> class> friend class future;
+		template<typename, typename, template<typename, typename, typename> class> friend class future;
 	};
 
 	template<>
@@ -141,7 +142,7 @@ namespace futures {
 			static size_type cols(vector, vector right) { return right.cols(); }
 			static size_type rows(vector, vector right) { return right.rows(); }
 
-		template<typename, typename> friend class add_op;
+		template<typename, typename, typename> friend class add_op;
 		friend future<vector, vector, add_op> operator+<>(vector, vector);
 		friend class future<vector, vector, add_op>;
 	};
@@ -157,10 +158,25 @@ namespace futures {
 			static size_type cols(vector, vector right) { return right.cols(); }
 			static size_type rows(vector, vector right) { return right.rows(); }
 
-		template<typename, typename> friend class sub_op;
+		template<typename, typename, typename> friend class sub_op;
 		friend future<vector, vector, sub_op> operator-<>(vector, vector);
 		friend class future<vector, vector, sub_op>;
 	};
+
+	template<typename Left>
+	future<double, vector, mult_op>
+	mult_op<Left, vector, typename std::enable_if<std::is_arithmetic<Left>::value>::type>::wrap(Left alpha, vector x)
+	{
+		return future<double, vector, mult_op>(alpha, x);
+	}
+
+	template<typename Left>
+	void
+	mult_op<Left, vector, typename std::enable_if<std::is_arithmetic<Left>::value>::type>::apply(result_type& y, Left alpha, vector x)
+	{
+		for (std::size_t i = 0; i < x.rows(); ++i)
+			y[i] = alpha * x[i];
+	}
 
 }
 

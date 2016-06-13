@@ -96,12 +96,6 @@ namespace futures {
 		gemv(y, 1, A, x, 0);
 	}
 
-	future<double, sparse_matrix, mult_op>
-	mult_op<double, sparse_matrix>::wrap(double alpha, sparse_matrix x)
-	{
-		return future<double, sparse_matrix, mult_op>(alpha, x);
-	}
-
 	future<sparse_matrix, sparse_matrix, add_op>
 	add_op<sparse_matrix, sparse_matrix>::wrap(sparse_matrix left, sparse_matrix right)
 	{
@@ -128,13 +122,6 @@ namespace futures {
 	{
 		for (std::size_t i = 0; i < right.rows() * right.cols(); ++i)
 			output.m_values[i] = left.m_values[i] - right.m_values[i];
-	}
-
-	void
-	mult_op<double, sparse_matrix>::apply(result_type& y, double alpha, sparse_matrix x)
-	{
-		for (std::size_t i = 0; i < x.rows() * x.cols(); ++i)
-			y.m_values[i] = alpha * x.m_values[i];
 	}
 
 }

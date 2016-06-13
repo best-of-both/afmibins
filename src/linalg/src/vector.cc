@@ -97,19 +97,6 @@ namespace futures {
 
 	using linalg::vector;
 
-	future<double, vector, mult_op>
-	mult_op<double, vector>::wrap(double alpha, vector x)
-	{
-		return future<double, vector, mult_op>(alpha, x);
-	}
-
-	void
-	mult_op<double, vector>::apply(result_type& y, double alpha, vector x)
-	{
-		for (std::size_t i = 0; i < x.rows(); ++i)
-			y[i] = alpha * x[i];
-	}
-
 	future<vector, vector, mult_op>
 	mult_op<vector, vector>::wrap(vector x, vector y)
 	{
