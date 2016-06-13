@@ -97,7 +97,7 @@ namespace futures {
 			static void apply(result_type&, Left, vector);
 			static const char repr = '*';
 		private:
-			static future<double, vector, mult_op> wrap(Left, vector);
+			static future<Left, vector, mult_op> wrap(Left, vector);
 			static size_type cols(Left, vector x) { return x.cols(); }
 			static size_type rows(Left, vector x) { return x.rows(); }
 
@@ -164,10 +164,10 @@ namespace futures {
 	};
 
 	template<typename Left>
-	future<double, vector, mult_op>
+	future<Left, vector, mult_op>
 	mult_op<Left, vector, typename std::enable_if<std::is_arithmetic<Left>::value>::type>::wrap(Left alpha, vector x)
 	{
-		return future<double, vector, mult_op>(alpha, x);
+		return future<Left, vector, mult_op>(alpha, x);
 	}
 
 	template<typename Left>

@@ -20,5 +20,5 @@
 #########################################################################
 
 rootdir = $(shell git rev-parse --show-cdup)
-need_modules = linalg types
+need_modules = linalg types algo multigrid ib
 include $(rootdir)Makefile.in

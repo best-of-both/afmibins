@@ -39,9 +39,9 @@ namespace algo {
 		                &nz = geometry.nz, &n = geometry.n;
 		for (index_type i = 0u; i < nx * ny * nz; ++i) {
 			index_type x = i % nx,
-			     y = (i % (nx * ny)) / nx,
-			     z = i / (nx * ny),
-			     ixz = x + nx * z;
+			           y = (i % (nx * ny)) / nx,
+			           z = i / (nx * ny),
+			           ixz = x + nx * z;
 			double dv;
 
 			if (ny > 1) {

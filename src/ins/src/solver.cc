@@ -67,9 +67,9 @@ namespace ins {
 			m_v_old = m_v_curr;
 			m_w_old = m_w_curr;
 
-			vector rx = m_u_old +   bdy_u   + timestep * (1 / m_rho * fx - m_u_adv);
-			vector ry = m_v_old + /*bdy_v*/ + timestep * (1 / m_rho * fy - m_v_adv);
-			vector rz = m_w_old +   bdy_w   + timestep * (1 / m_rho * fz - m_v_adv);
+			vector rx = m_u_old +   bdy_u   + timestep * (fx / m_rho - m_u_adv);
+			vector ry = m_v_old + /*bdy_v*/ + timestep * (fy / m_rho - m_v_adv);
+			vector rz = m_w_old +   bdy_w   + timestep * (fz / m_rho - m_w_adv);
 
 			algo::conjugate_gradient(m_u_curr, m_phhs, rx, m_tol);
 			algo::conjugate_gradient(m_v_curr, m_dhhs, ry, m_tol);
@@ -77,9 +77,9 @@ namespace ins {
 		} else {
 			const double timestep = m_dt;
 
-			vector rx = m_phhm * m_u_old +   bdy_u   + timestep * (1 / m_rho * fx - m_u_adv);
-			vector ry = m_dhhm * m_v_old + /*bdy_v*/ + timestep * (1 / m_rho * fy - m_v_adv);
-			vector rz = m_phhm * m_w_old +   bdy_w   + timestep * (1 / m_rho * fz - m_v_adv);
+			vector rx = m_phhm * m_u_old +   bdy_u   + timestep * (fx / m_rho - m_u_adv);
+			vector ry = m_dhhm * m_v_old + /*bdy_v*/ + timestep * (fy / m_rho - m_v_adv);
+			vector rz = m_phhm * m_w_old +   bdy_w   + timestep * (fz / m_rho - m_w_adv);
 
 			algo::conjugate_gradient(m_u_curr, m_phhs, rx, m_tol);
 			algo::conjugate_gradient(m_v_curr, m_dhhs, ry, m_tol);

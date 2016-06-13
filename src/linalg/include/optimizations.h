@@ -22,6 +22,8 @@
 #ifndef LINALG_OPTIMIZATIONS_H
 #define LINALG_OPTIMIZATIONS_H
 
+#include <iostream>
+
 #include "futures/futures.h"
 #include "vector.h"
 #include "dense_matrix.h"
@@ -31,15 +33,66 @@ namespace linalg {
 	using futures::future;
 	using futures::mult_op;
 
-	vector& operator+=(vector&, future<future<double, dense_matrix, mult_op>, vector, mult_op>);
-	vector& operator+=(vector&, future<double, future<dense_matrix, vector, mult_op>, mult_op>);
-	vector& operator+=(vector&, future<dense_matrix, future<double, vector, mult_op>, mult_op>);
-	vector& operator+=(vector&, future<dense_matrix, vector, mult_op>);
-	vector& operator-=(vector&, future<future<double, dense_matrix, mult_op>, vector, mult_op>);
-	vector& operator-=(vector&, future<double, future<dense_matrix, vector, mult_op>, mult_op>);
-	vector& operator-=(vector&, future<dense_matrix, future<double, vector, mult_op>, mult_op>);
-	vector& operator-=(vector&, future<dense_matrix, vector, mult_op>);
+	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+	vector& operator+=(vector& y, future<future<T, dense_matrix, mult_op>, vector, mult_op> f)
+	{
+		auto& l = f.left;
+		gemv(y, l.left, l.right, f.right, 1);
+		return y;
+	}
 
+	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+	vector& operator+=(vector& y, future<T, future<dense_matrix, vector, mult_op>, mult_op> f)
+	{
+		auto& r = f.right;
+		gemv(y, f.left, r.left, r.right, 1);
+		return y;
+	}
+
+	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+	vector& operator+=(vector& y, future<dense_matrix, future<T, vector, mult_op>, mult_op> f)
+	{
+		auto& r = f.right;
+		gemv(y, r.left, f.left, r.right, 1);
+		return y;
+	}
+
+	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+	vector& operator+=(vector& y, future<dense_matrix, vector, mult_op> f)
+	{
+		gemv(y, 1, f.left, f.right, 1);
+		return y;
+	}
+
+	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+	vector& operator-=(vector& y, future<future<T, dense_matrix, mult_op>, vector, mult_op> f)
+	{
+		auto& l = f.left;
+		gemv(y, -l.left, l.right, f.right, 1);
+		return y;
+	}
+
+	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+	vector& operator-=(vector& y, future<T, future<dense_matrix, vector, mult_op>, mult_op> f)
+	{
+		auto& r = f.right;
+		gemv(y, -f.left, r.left, r.right, 1);
+		return y;
+	}
+
+	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+	vector& operator-=(vector& y, future<dense_matrix, future<T, vector, mult_op>, mult_op> f)
+	{
+		auto& r = f.right;
+		gemv(y, -r.left, f.left, r.right, 1);
+		return y;
+	}
+	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+	vector& operator-=(vector& y, future<dense_matrix, vector, mult_op> f)
+	{
+		gemv(y, -1, f.left, f.right, 1);
+		return y;
+	}
 }
 
 #endif

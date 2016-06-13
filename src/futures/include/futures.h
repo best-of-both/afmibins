@@ -69,8 +69,7 @@ namespace futures {
 
 		friend std::ostream& operator<<(std::ostream& out, future w)
 		{
-			out << "(" << w.left << " " << Op<Left, Right, void>::repr << " " << w.right << ")";
-			return out;	
+			return out << "(" << w.left << " " << Op<Left, Right, void>::repr << " " << w.right << ")";
 		}
 
 		template<typename, typename, typename> friend class mult_op;
@@ -96,7 +95,7 @@ namespace futures {
 	template<typename Left, typename Right, typename Enable>
 	class mult_op {
 		public:
-			typedef typename mult_op<typename Left::result_type, typename Right::result_type, void>::result_type result_type;
+			typedef typename mult_op<typename Left::result_type, typename Right::result_type>::result_type result_type;
 			static const char repr = '*';
 		private:
 			static void apply(result_type&, Left, Right);
@@ -121,7 +120,7 @@ namespace futures {
 	void
 	mult_op<Left, Right, Enable>::apply(result_type& output, Left left, Right right)
 	{
-		mult_op<typename Left::result_type, typename Right::result_type, void>::apply(output, left, right);
+		mult_op<typename Left::result_type, typename Right::result_type>::apply(output, left, right);
 	}
 
 	template<typename Left, typename Right>
@@ -221,7 +220,7 @@ namespace futures {
 	future<Left, Right, mult_op>
 	operator*(Left left, Right right)
 	{
-		return mult_op<Left, Right, void>::wrap(left, right);
+		return mult_op<Left, Right>::wrap(left, right);
 	}
 
 	template<typename Left>

@@ -20,7 +20,7 @@
 \*************************************************************************/
 
 #ifndef LINALG_SPARSE_MATRIX_H
-#define LINALG_SPARSE_MATRIX
+#define LINALG_SPARSE_MATRIX_H
 
 #include <type_traits>
 
@@ -89,7 +89,7 @@ namespace futures {
 			static void apply(result_type&, Left, sparse_matrix);
 			static const char repr = '*';
 		private:
-			static future<double, sparse_matrix, mult_op> wrap(Left, sparse_matrix);
+			static future<Left, sparse_matrix, mult_op> wrap(Left, sparse_matrix);
 			static size_type cols(Left, sparse_matrix x) { return x.cols(); }
 			static size_type rows(Left, sparse_matrix x) { return x.rows(); }
 
@@ -131,10 +131,10 @@ namespace futures {
 	};
 
 	template<typename Left>
-	future<double, sparse_matrix, mult_op>
+	future<Left, sparse_matrix, mult_op>
 	mult_op<Left, sparse_matrix, typename std::enable_if<std::is_arithmetic<Left>::value>::type>::wrap(Left alpha, sparse_matrix x)
 	{
-		return future<double, sparse_matrix, mult_op>(alpha, x);
+		return future<Left, sparse_matrix, mult_op>(alpha, x);
 	}
 
 	template<typename Left>
