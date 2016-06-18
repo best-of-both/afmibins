@@ -20,7 +20,8 @@
 #########################################################################
 
 CXX ?= g++
-INCLUDES = -I/opt/local/include
+LDFLAGS = -Wl,-rpath,/opt/local/intel/mkl/lib -Wl,-rpath,/opt/local/intel/lib
+INCLUDES =
 LIBS = 
 
 rootdir = $(shell git rev-parse --show-cdup)
@@ -49,9 +50,9 @@ archives = $(foreach a,$(need_modules),$(LIBDIR)/lib$(subst /,.,$a).a)
 needhdrs = $(shell grep '\#\s*include\s*\".*/' $(SRCDIR)/*.cc $(INCDIR)/*.h 2> /dev/null | cut -d \" -f 2 | sort | uniq)
 sharedhdrs = $(foreach h,$(needhdrs),$(incdir)/$h)
 
-INCLUDES += -I$(INCDIR) -I/opt/local/include/atlas -I$(incdir)
-LIBDIRS += -L/opt/local/lib -L$(LIBDIR)
-LIBS += -lptcblas -latlas -lptlapack -lpthread
+INCLUDES += -I$(INCDIR) -I$(incdir) -I/opt/local/intel/mkl/include
+LIBDIRS += -L$(LIBDIR) -L/opt/local/intel/mkl/lib -L/opt/local/intel/lib
+LIBS += -lmkl_core -lmkl_intel -lmkl_intel_thread -liomp5
 
 srcs = $(shell ls -F $(SRCDIR)/*.cc 2> /dev/null)
 hdrs = $(shell ls -F $(INCDIR)/*.h 2> /dev/null)
@@ -91,11 +92,11 @@ distclean: $(submodules)
 links: | $(sharedhdrs)
 
 $(sharedhdrs): | $(links)
-	@$(MAKE) --directory=$(rootdir)$(SRCDIR)/$(subst /,/$(SRCDIR)/,$(subst $(incdir)/,,$(patsubst %/,%,$(dir $@)))) links
+	@$(MAKE) -s --directory=$(rootdir)$(SRCDIR)/$(subst /,/$(SRCDIR)/,$(subst $(incdir)/,,$(patsubst %/,%,$(dir $@)))) links
 
 FORCE:
 
-$(archives):
+$(archives): FORCE
 	@$(MAKE) -s --directory=$(rootdir)/$(SRCDIR)/$(subst .,/,$(patsubst $(LIBDIR)/lib%.a,%,$@))
 
 %/$(makefile): FORCE
@@ -106,28 +107,24 @@ $(links): | $(incdir)/$(mangled)
 	-@ln $(INCDIR)/$(notdir $@) $@ 2> /dev/null
 
 $(incdir)/$(mangled):
-	@mkdir -p $(incdir)/$(mangled) 2> /dev/null #&& echo $(depth) $(green)mkdir$(normal) .$(INCDIR)/$(mangled)
+	@mkdir -p $(incdir)/$(mangled) 2> /dev/null
 
 $(OBJDIR):
-	@echo $(depth) $(green)mkdir$(normal) obj
 	@mkdir -p $(OBJDIR)
 
 $(LIBDIR):
-	@echo $(depth) $(green)mkdir$(normal) lib
 	@mkdir -p $(LIBDIR)
 
 $(BINDIR):
-	@echo $(depth) $(green)mkdir$(normal) bin
 	@mkdir -p $(BINDIR)
 
 $(DEPDIR):
-	@echo $(depth) $(green)mkdir$(normal) deps
 	@mkdir -p $(DEPDIR)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cc | $(sharedhdrs) $(OBJDIR) $(DEPDIR)
 	@echo $(depth) $(green)$(CXX)$(normal) $(notdir $<)
 	@$(CXX) -g -std=c++11 -MM -MT $@ -MF $(DEPDIR)/$*.d $(INCLUDES) $(LIBDIRS) $(LIBS) $<  # create dependencies
-	@$(CXX) -g -std=c++11 -Wall -pedantic $(INCLUDES) $(LIBDIRS) $(LIBS) -c -o $@ $<
+	@$(CXX) -g -std=c++11 -Wall -pedantic $(LDFLAGS) $(INCLUDES) $(LIBDIRS) $(LIBS) -c -o $@ $<
 
 $(target): $(objects) | $(LIBDIR)
 ifneq "$(objects)" ""
@@ -141,7 +138,7 @@ $(BINDIR)/.test_%.passed: $(BINDIR)/test_%
 
 $(BINDIR)/test_%: $(TESTDIR)/%.cc $(target) $(archives) | $(BINDIR) $(DEPDIR)
 	@$(CXX) -g -std=c++11 -MM -MT $@ -MF $(DEPDIR)/test_$*.d $(INCLUDES) $(LIBDIRS) $(LIBS) -L$(LIBDIR) -l$(libname) $<
-	@$(CXX) -g -std=c++11 -Wall -pedantic $(INCLUDES) $(LIBDIRS) $(LIBS) $(needlibs) -L$(LIBDIR) -l$(libname) -o $@ $<
+	@$(CXX) -g -std=c++11 -Wall -pedantic $(LDFLAGS) $(INCLUDES) $(LIBDIRS) $(LIBS) $(needlibs) -L$(LIBDIR) -l$(libname) -o $@ $<
 
 -include $(dependencies)
 -include $(testdeps)

@@ -19,7 +19,6 @@
  *                                                                       *
 \*************************************************************************/
 
-#include <iostream>
 #include <cmath>
 #include "vector.h"
 #include "sparse_matrix.h"

@@ -22,8 +22,6 @@
 #ifndef MULTIGRID_SOLVER_H
 #define MULTIGRID_SOLVER_H
 
-#include <iostream>
-
 #include "types/typedefs.h"
 #include "types/geometry.h"
 #include "types/vector.h"

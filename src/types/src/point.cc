@@ -19,7 +19,8 @@
  *                                                                       *
 \*************************************************************************/
 
-#include <iostream>
+#include <cmath>
+#include <ostream>
 
 #include "point.h"
 
@@ -89,6 +90,12 @@ namespace types {
 	operator/(point left, double right)
 	{
 		return left /= right;
+	}
+
+	double
+	abs(point p)
+	{
+		return sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
 	}
 
 	std::ostream&

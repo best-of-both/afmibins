@@ -19,17 +19,15 @@
  *                                                                       *
 \*************************************************************************/
 
+#include <mkl.h>
+
 #include "types/typedefs.h"
 #include "interface.h"
 #include "vector.h"
 #include "dense_matrix.h"
 #include "sparse_matrix.h"
 
-#include <iostream>
-
 namespace linalg {
-
-	using types::index_type;
 
 	void
 	gemv(vector& y, double alpha, dense_matrix a, vector x, double beta)
@@ -41,6 +39,8 @@ namespace linalg {
 	void
 	gemv(vector& y, double alpha, sparse_matrix a, vector x, double beta)
 	{
+		using types::index_type;
+
 		index_type row = 0;
 		double row_value = y[row];
 		double mult_value = 0;

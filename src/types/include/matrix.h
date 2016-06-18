@@ -22,8 +22,6 @@
 #ifndef TYPES_MATRIX_H
 #define TYPES_MATRIX_H
 
-#include <iostream>
-
 #include "linalg/matrix.h"
 #include "linalg/sparse_matrix.h"
 #include "linalg/dense_matrix.h"

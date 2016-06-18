@@ -20,7 +20,6 @@
 \*************************************************************************/
 
 #include <cassert>
-#include <iostream>
 
 #include "types/vector.h"
 #include "types/geometry.h"

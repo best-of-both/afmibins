@@ -22,7 +22,6 @@
 #include <vector>
 #include <cassert>
 #include <cmath>
-#include <iostream>
 
 #include "types/geometry.h"
 #include "point.h"

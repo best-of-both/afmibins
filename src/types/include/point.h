@@ -47,6 +47,7 @@ namespace types {
 	point operator*(point, double);
 	point operator/(point, double);
 
+	double abs(point);
 	std::ostream& operator<<(std::ostream&, point);
 
 }

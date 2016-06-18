@@ -22,8 +22,6 @@
 #ifndef LINALG_OPTIMIZATIONS_H
 #define LINALG_OPTIMIZATIONS_H
 
-#include <iostream>
-
 #include "futures/futures.h"
 #include "vector.h"
 #include "dense_matrix.h"

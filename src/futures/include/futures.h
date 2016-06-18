@@ -25,9 +25,6 @@
 #include <cassert>
 #include <ostream>
 #include <type_traits>
-extern "C" {
-#include <cblas.h>
-}
 #include "types/typedefs.h"
 
 namespace futures {
