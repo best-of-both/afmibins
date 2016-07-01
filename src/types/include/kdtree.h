@@ -35,7 +35,6 @@ namespace types {
 	class kdtree_base;
 	class kdtree_x;
 	class kdtree_y;
-	class kdtree_z;
 
 	std::vector<point> search_nearby_periodic(point, const kdtree_base&);
 	std::vector<point> search_nearby_nonperiodic(point, const kdtree_base&);
@@ -74,12 +73,12 @@ namespace types {
 			kdtree_x(std::vector<point>, const geometry&);
 
 		friend class kdtree;
-		friend class kdtree_z;
+		friend class kdtree_y;
 	};
 
 	class kdtree_y : public kdtree_base {
 		private:
-			typedef kdtree_z tree_t;
+			typedef kdtree_x tree_t;
 		protected:
 			static bool comp(point l, point r) { return l.y < r.y; }
 			double& entry(point& p) const { return p.y; }
@@ -89,20 +88,6 @@ namespace types {
 			kdtree_y(std::vector<point>, const geometry&);
 
 		friend class kdtree_x;
-	};
-
-	class kdtree_z : public kdtree_base {
-		private:
-			typedef kdtree_x tree_t;
-		protected:
-			static bool comp(point l, point r) { return l.z < r.z; }
-			double& entry(point& p) const { return p.z; }
-			const double& entry(const point& p) const { return p.z; }
-			std::vector<point> search_nearby(point) const;
-
-			kdtree_z(std::vector<point>, const geometry&);
-
-		friend class kdtree_y;
 	};
 
 	class kdtree {

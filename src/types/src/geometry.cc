@@ -31,7 +31,6 @@ namespace types {
 	{
 		using std::fmod;
 		p.x = fmod(fmod(p.x, width) + width, width);
-		p.z = fmod(fmod(p.z, depth) + depth, depth);
 
 		return p;
 	}

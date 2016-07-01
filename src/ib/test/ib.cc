@@ -53,7 +53,7 @@ circle::construct_circle(const types::point center, const double radius)
 	for (unsigned int i = 0; i < 360; ++i) {
 		const double alpha = 2 * M_PI / 360 * i;
 		results.push_back({center.x + radius * cos(alpha),
-				center.y + radius * sin(alpha), center.z, i});
+				center.y + radius * sin(alpha), i});
 	}
 	return results;
 }
@@ -61,8 +61,8 @@ circle::construct_circle(const types::point center, const double radius)
 int
 main(void)
 {
-	const types::point center(0.5, 0.5, 0.5);
-	const types::geometry geometry(1, 1, 1, 20);
+	const types::point center(0.5, 0.5);
+	const types::geometry geometry(1, 1, 20);
 	eulerian_grid egrid(geometry);
 	circle lgrid(geometry, center, 0.25);
 	

@@ -27,8 +27,6 @@
 #include "types/vector.h"
 #include "laplacian.h"
 
-#define FACTOR 2
-
 namespace multigrid {
 
 	using types::size_type;

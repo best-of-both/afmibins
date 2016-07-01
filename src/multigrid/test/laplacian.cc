@@ -30,8 +30,8 @@ using namespace multigrid;
 int
 main(void)
 {
-	const types::geometry g(1, 1, 1, 10);
-	types::vector x(10 * 10 * 10, 3);
+	const types::geometry g(1, 1, 10);
+	types::vector x(10 * 10, 3);
 	laplacian l(g);
 
 	types::vector y = l * x;

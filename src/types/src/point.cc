@@ -31,7 +31,6 @@ namespace types {
 	{
 		x += other.x;
 		y += other.y;
-		z += other.z;
 		return *this;
 	}
 
@@ -40,7 +39,6 @@ namespace types {
 	{
 		x -= other.x;
 		y -= other.y;
-		z -= other.z;
 		return *this;
 	}
 
@@ -49,7 +47,6 @@ namespace types {
 	{
 		x *= other;
 		y *= other;
-		z *= other;
 		return *this;
 	}
 
@@ -58,7 +55,6 @@ namespace types {
 	{
 		x /= other;
 		y /= other;
-		z /= other;
 		return *this;
 	}
 
@@ -95,13 +91,13 @@ namespace types {
 	double
 	abs(point p)
 	{
-		return sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+		return sqrt(p.x * p.x + p.y * p.y);
 	}
 
 	std::ostream&
 	operator<<(std::ostream& out, point p)
 	{
-		return out << "(" << p.x << ", " << p.y << ", " << p.z << ")";
+		return out << "(" << p.x << ", " << p.y << ")";
 	}
 }
 

@@ -36,7 +36,7 @@ namespace ib {
 			for (types::point& p: source.search_nearby(coords)) {
 				index_type index = p.index;
 				types::point diff = p - coords;
-				double weight = delta(diff.x) * delta(diff.y) * delta(diff.z);
+				double weight = delta(diff.x) * delta(diff.y);
 				value += weight * source.volume(index) * source[index];
 			}
 			types::vector::operator[](i) = value;

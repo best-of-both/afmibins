@@ -34,20 +34,19 @@ namespace ins {
 	class projection {
 		protected:
 			const types::geometry& m_geometry;
-			vector m_phidtx, m_phidty, m_phidtz, m_phidt;
+			vector m_phidtx, m_phidty, m_phidt;
 			const multigrid::solver m_solver;
 		public:
 			const vector& phidt;
 
-			void project(vector&, vector&, vector&);
-			void boundary(vector&, vector&, vector&, vector&) const;
+			void project(vector&, vector&);
+			void boundary(vector&, vector&) const;
 
 			projection(const types::geometry& geometry, double tol) :
 				m_geometry(geometry),
-				m_phidtx(geometry.nx * geometry.ny * geometry.nz),
-				m_phidty(geometry.nx * (geometry.ny - 1) * geometry.nz),
-				m_phidtz(geometry.nx * geometry.ny * geometry.nz),
-				m_phidt(geometry.nx * geometry.ny * geometry.nz),
+				m_phidtx(geometry.nx * geometry.ny),
+				m_phidty(geometry.nx * (geometry.ny - 1)),
+				m_phidt(geometry.nx * geometry.ny),
 				m_solver(tol, 2, 2, geometry),
 				phidt(m_phidt) {}
 	};

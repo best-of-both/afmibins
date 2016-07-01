@@ -20,6 +20,7 @@
 \*************************************************************************/
 
 #include <cassert>
+#include <iostream>
 
 #include "types/vector.h"
 #include "types/geometry.h"
@@ -30,8 +31,8 @@ using namespace ins;
 int
 main(void)
 {
-	const types::geometry g(1, 1, 1, 10);
-	types::vector x(10 * 10 * 10, 3);
+	const types::geometry g(1, 1, 10);
+	types::vector x(10 * 10, 3);
 	helmholtz_periodic h(g, 0.1);
 
 	types::vector y = h * x;

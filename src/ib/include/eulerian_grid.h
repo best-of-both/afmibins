@@ -43,7 +43,7 @@ namespace ib {
 			virtual types::point coordinates(index_type) const;
 		public:
 			eulerian_grid(const types::geometry& geometry, double v = 0.0) :
-				grid(geometry, geometry.nx * geometry.ny * geometry.nz, v) {}
+				grid(geometry, geometry.nx * geometry.ny, v) {}
 			eulerian_grid(const types::geometry& geometry, size_type size, double v = 0.0) :
 				grid(geometry, size, v) {}
 			eulerian_grid(const types::geometry& geometry, std::initializer_list<double> v) :

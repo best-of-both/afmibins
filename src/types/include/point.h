@@ -30,15 +30,15 @@ namespace types {
 
 	class point {
 		public:
-			double x, y, z;
+			double x, y;
 			index_type index;
 			point& operator+=(point);
 			point& operator-=(point);
 			point& operator*=(double);
 			point& operator/=(double);
 
-			point(double x, double y, double z, index_type index = 0) :
-				x(x), y(y), z(z), index(index) {}
+			point(double x, double y, index_type index = 0) :
+				x(x), y(y), index(index) {}
 	};
 
 	point operator+(point, point);

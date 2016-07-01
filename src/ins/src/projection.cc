@@ -31,40 +31,35 @@ namespace ins {
 	using types::index_type;
 
 	void
-	projection::project(vector& u, vector& v, vector& w) {
-		const size_type &nx = m_geometry.nx, &nz = m_geometry.nz;
-		const vector dummy(nx * nz);
-		algo::div(m_phidt, m_geometry, u, v, w, dummy, dummy);
+	projection::project(vector& u, vector& v) {
+		const size_type &nx = m_geometry.nx;
+		const vector dummy(nx);
+		algo::div(m_phidt, m_geometry, u, v, dummy, dummy);
 		m_solver.solve(m_phidt);
-		algo::grad(m_phidtx, m_phidty, m_phidtz, m_geometry, m_phidt);
+		algo::grad(m_phidtx, m_phidty, m_geometry, m_phidt);
 		u -= m_phidtx;
 		v -= m_phidty;
-		w -= m_phidtz;
 	}
 
 	void
-	projection::boundary(vector& ut, vector& ub, vector& wt, vector& wb) const
+	projection::boundary(vector& ut, vector& ub) const
 	{
-		const size_type &nx = m_geometry.nx, &ny = m_geometry.ny, &nz = m_geometry.nz;
+		const size_type &nx = m_geometry.nx, &ny = m_geometry.ny;
 		if (ny > 1) {
-			for (index_type i = 0; i < nx * nz; ++i) {
-				index_type x = i % nx, z = i / nx,
-				           ixzb = x + nx * ny * z,
-				           ixzt = x + nx * (ny * (z + 1) - 1);
+			for (index_type i = 0; i < nx; ++i) {
+				index_type x = i,
+				           ixzb = x,
+				           ixzt = x + nx * (ny - 1);
 				ut[i] += (9 * m_phidtx[ixzt] - m_phidtx[ixzt - nx]) / 8;
 				ub[i] += (9 * m_phidtx[ixzb] - m_phidtx[ixzb + nx]) / 8;
-				wt[i] += (9 * m_phidtz[ixzt] - m_phidtz[ixzt - nx]) / 8;
-				wb[i] += (9 * m_phidtz[ixzb] - m_phidtz[ixzb + nx]) / 8;
 			}
 		} else {
-			for (index_type i = 0; i < nx * nz; ++i) {
-				index_type x = i % nx, z = i / nx,
-				           ixz = x + nx * ny * z;
-				double px = m_phidtx[ixz], pz = m_phidtz[ixz];
+			for (index_type i = 0; i < nx; ++i) {
+				index_type x = i % nx,
+				           ixz = x + nx;
+				double px = m_phidtx[ixz];
 				ut[i] += px;
 				ub[i] += px;
-				wt[i] += pz;
-				wb[i] += pz;
 			}
 		}
 	}

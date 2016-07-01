@@ -32,31 +32,29 @@ namespace algo {
 
 	void
 	div(vector& d, const types::geometry& geometry,
-			const vector& u, const vector& v, const vector& w,
+			const vector& u, const vector& v,
 			const vector& top, const vector& bottom)
 	{
 		const size_type &nx = geometry.nx, &ny = geometry.ny,
-		                &nz = geometry.nz, &n = geometry.n;
-		for (index_type i = 0u; i < nx * ny * nz; ++i) {
+		                &n = geometry.n;
+		for (index_type i = 0u; i < nx * ny; ++i) {
 			index_type x = i % nx,
-			           y = (i % (nx * ny)) / nx,
-			           z = i / (nx * ny),
-			           ixz = x + nx * z;
+			           y = i / nx,
+			           ixz = x;
 			double dv;
 
 			if (ny > 1) {
 				if (y == 0u)
-					dv = v[i - nx * z] - bottom[ixz];
+					dv = v[i] - bottom[ixz];
 				else if (y == ny - 1)
-					dv = top[ixz] - v[i - nx * (z + 1)];
+					dv = top[ixz] - v[i - nx];
 				else
-					dv = v[i - nx * z] - v[i - nx * (z + 1)];
+					dv = v[i] - v[i - nx];
 			}
 			else
 				dv = top[ixz] - bottom[ixz];
 			d[i] = n * (
-				(u[i + ((x + 1) % nx - x)] - u[i]) + dv +
-				(w[i + nx * ny * ((z + 1) % nz - z)] - w[i])
+				(u[i + ((x + 1) % nx - x)] - u[i]) + dv
 			);
 		}
 	}

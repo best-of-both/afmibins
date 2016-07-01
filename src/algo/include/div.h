@@ -32,7 +32,7 @@ namespace algo {
 	using types::size_type;
 
 	void div(vector&, const types::geometry&,
-			const vector&, const vector&, const vector&, const vector&, const vector&);
+			const vector&, const vector&, const vector&, const vector&);
 
 }
 

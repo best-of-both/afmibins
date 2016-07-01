@@ -30,18 +30,17 @@ namespace algo {
 	using types::vector;
 
 	void
-	grad(vector& px, vector& py, vector& pz, const types::geometry& geometry,
+	grad(vector& px, vector& py, const types::geometry& geometry,
 		const vector& p)
 	{
 		const size_type &nx = geometry.nx, &ny = geometry.ny,
-		                &nz = geometry.nz, &n = geometry.n;
-		for (index_type i = 0u; i < nx * ny * nz; ++i) {
-			index_type x = i % nx, y = (i % (nx * ny)) / nx, z = i / (nx * ny);
+		                &n = geometry.n;
+		for (index_type i = 0u; i < nx * ny; ++i) {
+			index_type x = i % nx, y = i / nx;
 
 			px[i] = n * (p[i] - p[i + ((x + nx - 1) % nx - x)]);
-			pz[i] = n * (p[i] - p[i + nx * ny * ((z + nz - 1) % nz - z)]);
 			if (y > 0u)
-				py[i - nx * (z + 1)] = n * (p[i] - p[i - nx]);
+				py[i - nx] = n * (p[i] - p[i - nx]);
 		}
 	}
 

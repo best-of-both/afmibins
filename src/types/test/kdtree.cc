@@ -32,20 +32,20 @@ using namespace types;
 int
 main(void)
 {
-	const types::geometry g(2, 2, 2, 2);
+	const types::geometry g(2, 2, 2);
 	std::vector<point> points = {
-		{0, 0, 0, 0},
-		{0, 0, 1, 1},
-		{0, 1, 0, 2},
-		{0, 1, 1, 3},
-		{1, 0, 0, 4},
-		{1, 0, 1, 5},
-		{1, 1, 0, 6},
-		{1, 1, 1, 7}
+		{0, 0, 0},
+		{0, 0, 1},
+		{0, 1, 2},
+		{0, 1, 3},
+		{1, 0, 4},
+		{1, 0, 5},
+		{1, 1, 6},
+		{1, 1, 7}
 	};
 
 	kdtree tree(points, g);
-	point p(0.5, 0, 0, 0);
+	point p(0.5, 0, 0);
 
 	for (auto& q: tree.search_nearby(p)) {
 		point r = q - p;

@@ -32,14 +32,14 @@ namespace types {
 			static unsigned int compute_levels(size_type);
 		public:
 			static constexpr unsigned int factor = 2;
-			const size_type width, height, depth, n;
-			const size_type nx, ny, nz;
+			const size_type width, height, n;
+			const size_type nx, ny;
 
 			point fit_to_box(point) const;
 			bool fits_to_box(point) const;
 
-			geometry(size_type w, size_type h, size_type d, size_type n) :
-				width(w), height(h), depth(d), n(n), nx(w * n), ny(h * n), nz(d * n) {}
+			geometry(size_type w, size_type h, size_type n) :
+				width(w), height(h), n(n), nx(w * n), ny(h * n) {}
 	};
 
 }

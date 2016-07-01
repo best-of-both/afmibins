@@ -55,18 +55,6 @@ namespace types {
 		return search_nearby_nonperiodic(coords, *this);
 	}
 
-	kdtree_z::kdtree_z(std::vector<point> l, const geometry& g) :
-		kdtree_base(l[l.size() / 2],
-			l.size() > 1 ? new tree_t(sort(l.begin(), l.begin() + l.size()/2, tree_t::comp), g) : nullptr,
-			l.size() > 2 ? new tree_t(sort(l.begin() + l.size()/2 + 1, l.end(), tree_t::comp), g) : nullptr,
-			g.depth, g.n) {}
-
-	std::vector<point>
-	kdtree_z::search_nearby(point coords) const
-	{
-		return search_nearby_periodic(coords, *this);
-	}
-
 	kdtree::kdtree(std::vector<point> l, const geometry& g) :
 		m_tree(new tree_t(kdtree_base::sort(l.begin(), l.end(), tree_t::comp), g)) {}
 
@@ -106,8 +94,7 @@ namespace types {
 
 			point diff = ref - coords;
 			if (std::abs(diff.x) >= threshold ||
-					std::abs(diff.y) >= threshold ||
-			 		std::abs(diff.z) >= threshold) {
+					std::abs(diff.y) >= threshold) {
 				return results;
 			}
 			results.push_back(ref);

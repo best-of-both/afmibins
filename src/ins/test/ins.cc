@@ -30,9 +30,9 @@ using namespace ins;
 int
 main(void)
 {
-	const types::geometry geometry(1, 1, 1, 16);
+	const types::geometry geometry(1, 1, 16);
 	const types::size_type &nx = geometry.nx, &ny = geometry.ny,
-	                       &nz = geometry.nz, &n = geometry.n;
+	                       &n = geometry.n;
 
 	const double mu = 1., rho = 1., dt = 0.00001, tol=1e-15;
 	const unsigned int steps = 1;
@@ -43,16 +43,16 @@ main(void)
 	 */
 
 	// Flow field components and boundary values
-	ib::eulerian_grid u0(geometry), v0(geometry, nx * (ny - 1) * nz), w0(geometry);
-	types::vector ut(nx * nz), ub(nx * nz), wt(nx * nz), wb(nx * nz);
+	ib::eulerian_grid u0(geometry), v0(geometry, nx * (ny - 1));
+	types::vector ut(nx), ub(nx);
 
 	// Force components
-	ib::eulerian_grid fx(geometry, 1.0), fy(geometry, nx * (ny - 1) * nz), fz(geometry);
+	ib::eulerian_grid fx(geometry, 1.0), fy(geometry, nx * (ny - 1));
 
 	/* Here is an example to initialize u0: */
 	 const types::size_type &H = geometry.height;
-	 for (auto i = 0u; i < nx * ny * nz; ++i) {
-	      auto iy = (i % (nx * ny)) / nx;
+	 for (auto i = 0u; i < nx * ny; ++i) {
+	      auto iy = i / nx;
 	      double y = (iy + 0.5) / n;
 	
 	      u0[i] = (H - y) * y;
@@ -65,27 +65,25 @@ main(void)
 	 */
 
 
-	solver s(geometry, mu, rho, dt, tol, u0, v0, w0);
+	solver s(geometry, mu, rho, dt, tol, u0, v0);
 	//std::cout << u0 << std::endl;
 
 	for (auto step = 0u; step < steps; ++step) {
 		// ...
 
 		// First call to step performs the BE step
-		s.step(ut, ub, wt, wb, fx, fy, fz);
+		s.step(ut, ub, fx, fy);
 		// u0, v0, w0 are now at the half time-step
 
 		// fx.interpolate(lagrangian_grid_inst_x)
 		// fy.interpolate(lagrangian_grid_inst_y)
-		// fz.interpolate(lagrangian_grid_inst_z)
 
 		// Second call to step performs the CN step
-		s.step(ut, ub, wt, wb, fx, fy, fz);
+		s.step(ut, ub, fx, fy);
 		// u0, v0, w0 are now at the full time-step
 
 		// fx.interpolate(lagrangian_grid_inst_x)
 		// fy.interpolate(lagrangian_grid_inst_y)
-		// fz.interpolate(lagrangian_grid_inst_z)
 
 		// To get the pressure, e.g.,
 		// auto p = s.get_p();

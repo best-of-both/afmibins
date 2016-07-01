@@ -31,7 +31,7 @@ namespace algo {
 	using types::size_type;
 	using types::vector;
 
-	void grad(vector&, vector&, vector&, const types::geometry&, const vector&);
+	void grad(vector&, vector&, const types::geometry&, const vector&);
 
 }
 

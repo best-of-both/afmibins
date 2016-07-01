@@ -29,21 +29,19 @@ namespace multigrid {
 	using types::index_type;
 
 	laplacian::laplacian(const types::geometry& geometry) :
-		types::sparse_square_matrix(geometry.nx * geometry.ny * geometry.nz, 7),
+		types::sparse_square_matrix(geometry.nx * geometry.ny, 5),
 		m_geometry(geometry)
 	{
 		const size_type &nx = m_geometry.nx, &ny = m_geometry.ny,
-		                &nz = m_geometry.nz, &n = m_geometry.n;
-		for (index_type row = 0u; row < nx * ny * nz; ++row) {
-			index_type x = row % nx, y = (row % (nx * ny)) / nx, z = row / (nx * ny);
+		                &n = m_geometry.n;
+		for (index_type row = 0u; row < nx * ny; ++row) {
+			index_type x = row % nx, y = row / nx;
 			const double offdiagonal = n * n;
-			double diagonal = -6.0 * offdiagonal,
+			double diagonal = -4.0 * offdiagonal,
 			       left = offdiagonal,
 			       right = offdiagonal,
 			       top = offdiagonal,
-			       bottom = offdiagonal,
-			       front = offdiagonal,
-			       back = offdiagonal;
+			       bottom = offdiagonal;
 
 			if (nx == 1) {
 				diagonal += left + right;
@@ -67,30 +65,13 @@ namespace multigrid {
 				top = 0;
 			}
 
-			if (nz == 1) {
-				diagonal += back + front;
-				back = front = 0;
-			} else if (nz == 2) {
-				if (z == 0) {
-					front += back;
-					back = 0;
-				} else {
-					back += front;
-					front = 0;
-				}
-			}
-
-			if (z == nz - 1) push_value(row, x + nx * y, front);
-			if (z > 0)       push_value(row, row - nx * ny, back);
 			if (y > 0)       push_value(row, row - nx, bottom);
-			if (x == nx - 1) push_value(row, nx * (y + ny * z), right);
+			if (x == nx - 1) push_value(row, nx * y, right);
 			if (x > 0)       push_value(row, row - 1, left);
 			                 push_value(row, row, diagonal);
 			if (x < nx - 1)  push_value(row, row + 1, right);
-			if (x == 0)      push_value(row, nx - 1 + nx * (y + ny * z), left);
+			if (x == 0)      push_value(row, nx - 1 + nx * y, left);
 			if (y < ny - 1)  push_value(row, row + nx, top);
-		 	if (z < nz - 1)  push_value(row, row + ny * ny, front);
-			if (z == 0)      push_value(row, x + ny * (y + ny * (nz - 1)), back);
 		}
 	}
 

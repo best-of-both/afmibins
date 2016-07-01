@@ -33,10 +33,10 @@ int
 main(void)
 {
 	const unsigned int N = 2;
-	const types::geometry g(1, 1, 1, N);
+	const types::geometry g(1, 1, N);
 	solver s(1e-7, 2, 2, g);
 	laplacian A(g);
-	vector x = {1, -1, -1, 1, 1, -1, -1, 1};
+	vector x = {1, -1, -1, 1};
 
 	vector y = A * x;
 	s.solve(y);

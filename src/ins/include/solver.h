@@ -41,18 +41,17 @@ namespace ins {
 			const helmholtz_dirichlet m_dhhm, m_dhhs;
 			vector &m_u_curr, m_u_old, m_u_adv;
 			vector &m_v_curr, m_v_old, m_v_adv;
-			vector &m_w_curr, m_w_old, m_w_adv;
 			bool m_have_half_stepped;
 
-			void advection(vector&, vector&, vector&);
+			void advection(vector&, vector&);
 		public:
-			const vector &u, &v, &w;
+			const vector &u, &v;
 
-			void step(vector&, vector&, vector&, vector&, vector&, vector&, vector&);
+			void step(vector&, vector&, vector&, vector&);
 			const vector p() { return m_phhs * m_projector.phidt; }
 
 			solver(const types::geometry&, double, double, double, double,
-					vector&, vector&, vector&);
+					vector&, vector&);
 	};
 
 }
